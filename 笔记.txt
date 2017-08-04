@@ -1,0 +1,196 @@
+1.复合数据类型
+处理单行单列数据用  标量数据类型
+处理单行多列数据用  PL/SQL记录类型
+处理单列多行数据用  PL/SQL集合类型
+处理多行多列数据用  PL/SQL表或嵌套表
+
+定义记录类型的变量
+a.先用TYPE声明数据类型
+TYPE 类型名 is record(
+   记录中字段类型定义
+   字段名 数据类型 [not null] [:=默认值],
+   ......
+);
+
+b.在定义指定类型的变量
+  变量名 类型名
+
+c.使用记录类型变量
+  记录类型变量名.字段名:=值;
+  empRecord1.empno = 10086;
+ 
+  使用select into赋值
+  select ename into empRecord1.ename from emp where
+  empno = 7369
+--------------------------------------------------
+使用%rowtype可以定义一个记录类型变量参考某个表
+ deptRecord dept%rowtype;
+
+使用select into语句一次性给记录类型变量的多个字段赋值
+
+/*
+定义记录类型的变量
+1.定义一个记录类型
+
+*/
+declare
+type emp_record_type is record(
+  empno varchar(20),
+  ename emp.ename%type,
+  job emp.job%type,
+  mgr emp.mgr%type,
+  hiredate emp.hiredate%type,
+  sal emp.sal%type,
+  comm emp.comm%type,
+  deptno emp.deptno%type
+);
+
+2.再定义记录类型变量
+empRecord1 emp_record_type;
+
+
+3.使用%rowtype定义一个记录类型变量
+empRecord2 emp%rowtype;
+deptRecord dept%rowtype;
+
+
+begin
+ --给记录类型变量的字段赋值
+ empRecord1.empno:=7369;
+ select ename into empRecord1.ename from emp where empno = 7369;
+ empRecord1.job:='cleck';
+ empRecord1.mgr:=7902;
+ empRecord1.hiredate:=sysdate;
+ empRecord1.sal:=7000;
+ empRecord1.comm:=null;
+ empRecord1.deptno:=30;
+
+--使用select into语句一次给记录类型变量的多个字段赋值
+ select empno,ename into empRecord2.empno,empRecord2.ename where empno = 7499;
+ dbms_output_put_line('员工号:'||empRecord2.empno);
+ dbms_output_put_line('姓名:'||empRecord2.ename);
+ dbms_output_put_line('月薪:'||empRecord2.sal);
+ dbms_output_put_line('部门号:'||empRecord2.deptno);
+
+
+ select * into empRecord2 from emp where empno = 7521;
+ dbms_output_put_line('员工号:'||empRecord2.empno);
+ dbms_output_put_line('姓名:'||empRecord2.ename);
+ dbms_output_put_line('月薪:'||empRecord2.sal);
+ dbms_output_put_line('部门号:'||empRecord2.deptno);
+
+end
+
+select * from emp
+
+计算个人所得税
+输入某人的员工号，打印他的个人所得税和税后工资
+1) salary<=3500 personTax = 0;
+2) 3500<salary<=5000  personTax = salary*0.02
+3) 5000<salary<=8000 personTax = salary*0.03
+4) 8000<salary<=12000 personTax = salary*0.05;
+5) 12000<salary<=20000 personTax = salary*0.1;
+6) 20000<salary<=50000 personTax = salary*0.2
+declare
+ empno emp.empno%type;
+ salary emp.sal%type;
+ personTax emp.sal%type;
+ salaryAfter emp.sal%type;
+begin
+ --利用输入给empno赋值
+ empno:=&
+ --根据empno查询该员工的工资
+
+ --使用多分支结构计算个人所得税和税后工资
+
+ --打印输出
+ 
+ select sal into salary from emp where empno = 7369;
+ dbms_output.put_line(salary);
+ --单分支
+ if salary<2000 then
+ dbms_output.put_line('工资太低了，加薪500');
+ update emp set sal = sal + 500 where empno = 7369;
+end if;
+
+2.分支结构 --case语句
+1)不等值比较
+case 选择符
+ when 表达式 then SQL语句|PL/SQL语句;
+ when 表达式 then SQL语句|PL/SQL语句;
+ ....
+ [else SQL语句|PL/SQL语句];
+end case;
+
+3)case表达式
+ 变量:=
+   case
+    when 表达式 then result1
+    when 表达式 then result2
+    when 表达式 then result3
+    ....
+    else then resultN
+    end;
+-----------------------------------------------
+3.循环语句 --loop 等价于do..while语句
+loop
+ SQL语句和PL/SQL语句
+ exit [when 退出条件];
+end loop;
+
+while 循环执行的条件 loop
+ SQL语句和PL/SQL语句
+end loop;
+
+
+
+for 循环的控制变量 in [reverse] 低边界..高边界 loop
+  SQL语句和PL/SQL语句
+end loop;
+
+4.异常
+a.异常的发生
+  我们在操作Oracle时(使用PL/SQL或SQL语句)，语法不对或违反了
+  数据库约束，就会产生于这些错误关联的异常，从而阻止正常运行。
+b.Oracle中的异常
+  1.系统异常
+    1)已命名的异常
+      处理方式：无需声明，直接在异常处理块中捕获异常处理
+    2)未命名的异常
+      处理方式：需要声明(给异常取个名字)，然后在异常处理块中
+      通过捕获对应的异常名进行处理
+
+  2.程序员用raise语句抛出的自定义异常
+    处理方式：需要声明，并且需要在执行块中手动抛出，然后在异常
+    处理块中捕获对应的异常名进行处理
+
+c.异常处理
+  declare
+  ...
+  begin
+  ...
+  exception
+   when 异常名1 then
+      异常1的处理语句
+   when 异常名2 or 异常名3 then
+      异常2和异常3的处理语句
+   when others then
+      其他异常处理语句
+
+  end;
+
+  d.系统未命名的异常处理
+   第一步：在声明部分声明异常
+      异常名 exception
+   第二步：在声明部分将t异常名和异常编号绑定
+       prama exception_init(异常名，异常编号)；
+   第三步：在异常处理部分捕获异常并处理
+
+  e.自定义异常的处理
+   第一步：在声明部分声明异常
+   第二步：在执行部分抛出异常
+     方式一：raise 异常名
+     方式二：在存储过程或函数中使用系统提供的存储过程
+        raise_application_error(error,msg,true|false)
+   第三步：在异常部分捕获异常并处理
+      
